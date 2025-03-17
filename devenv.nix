@@ -16,13 +16,21 @@
     python = {
       enable = true;
       version = "3.10";
-      uv.enable = true;
+      uv = {
+        enable = true;
+        sync.enable = true;
+      };
     };
   };
 
   # https://devenv.sh/processes/
   processes = {
     serve.exec = "uv run mkslides serve docs/";
+  };
+
+  containers."nix-demo" = {
+    name = "kyokley/nix-demo";
+    startupCommand = config.processes.serve.exec;
   };
 
   # https://devenv.sh/scripts/
