@@ -14,6 +14,7 @@ title: Nix The World
 - ...A way of life? <!-- .element: class="fragment" -->
 
 ---
+
 ## devenv.sh
 ```nix
 { pkgs, lib, config, inputs, ... }:
@@ -22,7 +23,7 @@ title: Nix The World
   languages = {
     python = {
       enable = true;
-      version = "3.12";
+      version = "3.10";
       uv.enable = true;
     };
   };
@@ -33,3 +34,92 @@ title: Nix The World
   };
 }
 ```
+
+---
+
+## Installing libraries
+```bash
+sh-5.2# nix-shell -p devenv
+```
+
+---
+
+## Installing libraries
+```bash
+these 33 paths will be fetched (75.63 MiB download, 352.04 MiB unpacked):
+  /nix/store/bwkb907myixfzzykp21m9iczkhrq5pfy-binutils-2.43.1
+  /nix/store/2qssg7pjgadwmqns6jm3qlr5bbdl4dcr-binutils-2.43.1-lib
+  /nix/store/x9as7x6f7cdgcskvvn3yp02m662krr7y-binutils-wrapper-2.43.1
+  /nix/store/b52i89as6gi475dazksqasvd7f9bppvl-boehm-gc-8.2.8
+  /nix/store/vqjygx23hkim1kpidik5xcs9whayf3sr-bzip2-1.0.8-bin
+  /nix/store/zr62cxlgkldv8fs7dgak30clwmcsycr9-cachix-1.7.5-bin
+  /nix/store/kzf3sh3qsrwrqvddyacdxz0b8ncn35xr-devenv-1.3.1
+  /nix/store/cxwsmlr3xh1ml4r0kgdjrknw7504b9f8-diffutils-3.10
+  /nix/store/k5x874vwcaxlan1cw248lwqr4l4v7hyk-ed-1.20.2
+  /nix/store/y1563grxzk23mapa57a6qzsjaqyvcw76-elfutils-0.191
+  /nix/store/ka4sync4bccr9mz2ys0dbqjn24hp8v57-expand-response-params
+  /nix/store/g4lksqp6l8qiab4a0as21s6556xh4gyp-file-5.45
+  /nix/store/nnin69nrnrrmnv2scbwyfkgh1rf51gh1-gawk-5.3.1
+  /nix/store/4krab2h0hd4wvxxmscxrw21pl77j4i7j-gcc-13.3.0
+  /nix/store/4apajimszc47rxwcpvc3g3rj2icinl71-gcc-wrapper-13.3.0
+  /nix/store/lw21wr626v5sdcaxxkv2k4zf1121hfc9-glibc-2.40-36-dev
+  /nix/store/y11zr71f9i1zy1vrdy3kjx8j6slsb3l3-gmp-6.3.0
+  /nix/store/rlnih3wlxxwqn4xdahjgfjydvv78kvki-gnu-config-2024-01-01
+  /nix/store/9y5kd90fdbrq3r4yc9mpqn82f93zdgyq-gnumake-4.4.1
+  /nix/store/xxfkk4gqnaimiwzi6mmsmcs9bl2r8y7f-isl-0.20
+  /nix/store/gi2n9v8n5n37rmzjvcp0r3b3a5w17qfs-libgit2-1.8.4-lib
+  /nix/store/0qqs7bkfk21h8vh7m3x84hphciqv75lm-libmpc-1.3.1
+  /nix/store/dvsai0ym9czjl5mcsarcdwccb70615n4-linux-headers-6.10
+  /nix/store/wfxkyxmg47bhj098im5rp60hmkagn96x-mpfr-4.2.1
+  /nix/store/mlic086jky8mmmq3r3s4b080q840pdk0-nix-2.24-devenv
+  /nix/store/bm7xjrw6mw2pgnjf2pnmsdyyaq5j56gq-nix-2.24-devenv-man
+  /nix/store/w4l4xvw461ywc4ia3accj5i3hh50n4r8-nix-2.24.10
+  /nix/store/ijl95ypkqvp33y8nvcsfhcf9psx2mmrd-nix-2.24.10-man
+  /nix/store/mdmansf6zkzsnrcf4h3yav5kz93rh03y-patch-2.7.6
+  /nix/store/9q63d382x7k2h6cc2pfsb39ar3n6f9wg-patchelf-0.15.0
+  /nix/store/m1p78gqlc0pw3sdbz3rdhklzm0g26g96-stdenv-linux
+  /nix/store/ljlah5wqcbix5wg8rvm3g8rc7k9zn1qg-update-autotools-gnu-config-scripts-hook
+  /nix/store/5180mi672sl6ikiwyhvgnxasz6iqxws0-xz-5.6.3-bin
+copying path '/nix/store/nnin69nrnrrmnv2scbwyfkgh1rf51gh1-gawk-5.3.1' from 'https://cache.nixos.org'...
+copying path '/nix/store/rlnih3wlxxwqn4xdahjgfjydvv78kvki-gnu-config-2024-01-01' from 'https://cache.nixos.org'...
+copying path '/nix/store/bm7xjrw6mw2pgnjf2pnmsdyyaq5j56gq-nix-2.24-devenv-man' from 'https://cache.nixos.org'...
+copying path '/nix/store/b52i89as6gi475dazksqasvd7f9bppvl-boehm-gc-8.2.8' from 'https://cache.nixos.org'...
+copying path '/nix/store/vqjygx23hkim1kpidik5xcs9whayf3sr-bzip2-1.0.8-bin' from 'https://cache.nixos.org'...
+copying path '/nix/store/cxwsmlr3xh1ml4r0kgdjrknw7504b9f8-diffutils-3.10' from 'https://cache.nixos.org'...
+copying path '/nix/store/k5x874vwcaxlan1cw248lwqr4l4v7hyk-ed-1.20.2' from 'https://cache.nixos.org'...
+copying path '/nix/store/ka4sync4bccr9mz2ys0dbqjn24hp8v57-expand-response-params' from 'https://cache.nixos.org'...
+copying path '/nix/store/g4lksqp6l8qiab4a0as21s6556xh4gyp-file-5.45' from 'https://cache.nixos.org'...
+copying path '/nix/store/9y5kd90fdbrq3r4yc9mpqn82f93zdgyq-gnumake-4.4.1' from 'https://cache.nixos.org'...
+copying path '/nix/store/dvsai0ym9czjl5mcsarcdwccb70615n4-linux-headers-6.10' from 'https://cache.nixos.org'...
+copying path '/nix/store/ijl95ypkqvp33y8nvcsfhcf9psx2mmrd-nix-2.24.10-man' from 'https://cache.nixos.org'...
+copying path '/nix/store/9q63d382x7k2h6cc2pfsb39ar3n6f9wg-patchelf-0.15.0' from 'https://cache.nixos.org'...
+copying path '/nix/store/5180mi672sl6ikiwyhvgnxasz6iqxws0-xz-5.6.3-bin' from 'https://cache.nixos.org'...
+copying path '/nix/store/y1563grxzk23mapa57a6qzsjaqyvcw76-elfutils-0.191' from 'https://cache.nixos.org'...
+copying path '/nix/store/gi2n9v8n5n37rmzjvcp0r3b3a5w17qfs-libgit2-1.8.4-lib' from 'https://cache.nixos.org'...
+copying path '/nix/store/2qssg7pjgadwmqns6jm3qlr5bbdl4dcr-binutils-2.43.1-lib' from 'https://cache.nixos.org'...
+copying path '/nix/store/y11zr71f9i1zy1vrdy3kjx8j6slsb3l3-gmp-6.3.0' from 'https://cache.nixos.org'...
+copying path '/nix/store/ljlah5wqcbix5wg8rvm3g8rc7k9zn1qg-update-autotools-gnu-config-scripts-hook' from 'https://cache.nixos.org'...
+copying path '/nix/store/mdmansf6zkzsnrcf4h3yav5kz93rh03y-patch-2.7.6' from 'https://cache.nixos.org'...
+copying path '/nix/store/w4l4xvw461ywc4ia3accj5i3hh50n4r8-nix-2.24.10' from 'https://cache.nixos.org'...
+copying path '/nix/store/mlic086jky8mmmq3r3s4b080q840pdk0-nix-2.24-devenv' from 'https://cache.nixos.org'...
+copying path '/nix/store/lw21wr626v5sdcaxxkv2k4zf1121hfc9-glibc-2.40-36-dev' from 'https://cache.nixos.org'...
+copying path '/nix/store/bwkb907myixfzzykp21m9iczkhrq5pfy-binutils-2.43.1' from 'https://cache.nixos.org'...
+copying path '/nix/store/xxfkk4gqnaimiwzi6mmsmcs9bl2r8y7f-isl-0.20' from 'https://cache.nixos.org'...
+copying path '/nix/store/wfxkyxmg47bhj098im5rp60hmkagn96x-mpfr-4.2.1' from 'https://cache.nixos.org'...
+copying path '/nix/store/zr62cxlgkldv8fs7dgak30clwmcsycr9-cachix-1.7.5-bin' from 'https://cache.nixos.org'...
+copying path '/nix/store/0qqs7bkfk21h8vh7m3x84hphciqv75lm-libmpc-1.3.1' from 'https://cache.nixos.org'...
+copying path '/nix/store/x9as7x6f7cdgcskvvn3yp02m662krr7y-binutils-wrapper-2.43.1' from 'https://cache.nixos.org'...
+copying path '/nix/store/4krab2h0hd4wvxxmscxrw21pl77j4i7j-gcc-13.3.0' from 'https://cache.nixos.org'...
+copying path '/nix/store/kzf3sh3qsrwrqvddyacdxz0b8ncn35xr-devenv-1.3.1' from 'https://cache.nixos.org'...
+copying path '/nix/store/4apajimszc47rxwcpvc3g3rj2icinl71-gcc-wrapper-13.3.0' from 'https://cache.nixos.org'...
+copying path '/nix/store/m1p78gqlc0pw3sdbz3rdhklzm0g26g96-stdenv-linux' from 'https://cache.nixos.org'...
+```
+??? <!-- .element: class="fragment" -->
+
+---
+
+## Nix Store
+- What lives in the store?
+    - Libraries<!-- .element: class="fragment" -->
+    - Executables <!-- .element: class="fragment" -->
+    - Even config files <!-- .element: class="fragment" -->

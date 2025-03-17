@@ -10,7 +10,7 @@
   languages = {
     python = {
       enable = true;
-      version = "3.12";
+      version = "3.10";
       uv.enable = true;
     };
   };
