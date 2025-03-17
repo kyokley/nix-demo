@@ -123,3 +123,17 @@ copying path '/nix/store/m1p78gqlc0pw3sdbz3rdhklzm0g26g96-stdenv-linux' from 'ht
     - Libraries<!-- .element: class="fragment" -->
     - Executables <!-- .element: class="fragment" -->
     - Even config files <!-- .element: class="fragment" -->
+
+---
+
+## The Immutable OS
+
+---
+
+## Garbage Collecting
+
+---
+
+## Generations
+
+---
