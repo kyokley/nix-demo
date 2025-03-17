@@ -1,5 +1,4 @@
 { pkgs, lib, config, inputs, ... }:
-
 {
   # https://devenv.sh/basics/
   env.GREET = "Nix Demo";
@@ -17,16 +16,17 @@
   };
 
   # https://devenv.sh/processes/
-  # processes.cargo-watch.exec = "cargo-watch";
-
-  # https://devenv.sh/services/
-  # services.postgres.enable = true;
+  processes = {
+    serve.exec = "uv run mkslides serve docs/";
+  };
 
   # https://devenv.sh/scripts/
-  scripts.hello.exec = ''
-    echo Welcome to $GREET
-    echo
-  '';
+  scripts = {
+    hello.exec = ''
+      echo Welcome to $GREET
+      echo
+    '';
+  };
 
   enterShell = ''
     hello
@@ -45,10 +45,8 @@
   # '';
 
   # https://devenv.sh/git-hooks/
-  # git-hooks.hooks = {
-  #   markdownlint.enable = true;
-  #   html-tidy.enable = true;
-  # };
+  git-hooks.hooks = {
+  };
 
   # See full reference at https://devenv.sh/reference/options/
 }
