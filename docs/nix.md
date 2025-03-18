@@ -8,43 +8,57 @@ title: Nix The World
 ---
 
 ## What is Nix?
-- A package manager <!-- .element: class="fragment" -->
 - A programming language <!-- .element: class="fragment" -->
+- A package manager <!-- .element: class="fragment" -->
 - An operating system <!-- .element: class="fragment" -->
 - ...A way of life? <!-- .element: class="fragment" -->
 
 ---
 
-## devenv.sh
+## Programming
+### ovpn.nix
 ```nix
-{ pkgs, lib, config, inputs, ... }:
-{
-  # https://devenv.sh/languages/
-  languages = {
-    python = {
-      enable = true;
-      version = "3.10";
-      uv.enable = true;
-    };
-  };
+{ pkgs, lib, ...}: let
+...
 
-  # https://devenv.sh/processes/
-  processes = {
-    serve.exec = "uv run mkslides serve docs/";
-  };
+    pkgs.writeShellScriptBin "configure-oracle-tunnel" (
+      lib.concatStringsSep
+      "\n"
+      (
+        [
+          "iptables -t nat -N REDSOCKS || true"
+        ]
+        ++ map (x: "iptables -t nat -A REDSOCKS -d " + x + " -j RETURN || true") reserved-ips
+        ++ [
+          "iptables -t nat -A REDSOCKS -p tcp -j REDIRECT --to-ports ${redsocks-listen-port} || true"
+          ''iptables -t nat -A PREROUTING -i docker0 -p tcp -j DNAT --to-destination 127.0.0.1:${redsocks-listen-port} -m comment --comment "REDSOCKS docker rule" || true''
+        ]
+        ++ map (host_record: let
+          host = lib.splitString " " host_record;
+        in "iptables -t nat -A OUTPUT -p tcp -d ${lib.elemAt host 1}/32 -j REDSOCKS || true")
+        domains
+      )
+    );
+  stop-oracle-tunnel = pkgs.writeShellScriptBin "stop-oracle-tunnel" ''
+    iptables-save | grep -v REDSOCKS | iptables-restore
+  '';
+
+...
 }
 ```
 
 ---
 
-## Installing libraries
+## Packages
+### Installing libraries
 ```bash
 sh-5.2# nix-shell -p devenv
 ```
 
 ---
 
-## Installing libraries
+## Packages
+### Installing libraries
 ```bash
 these 33 paths will be fetched (75.63 MiB download, 352.04 MiB unpacked):
   /nix/store/bwkb907myixfzzykp21m9iczkhrq5pfy-binutils-2.43.1
@@ -118,7 +132,8 @@ copying path '/nix/store/m1p78gqlc0pw3sdbz3rdhklzm0g26g96-stdenv-linux' from 'ht
 
 ---
 
-## Nix Store
+## Packages
+### Nix Store
 - What lives in the store?
     - Libraries<!-- .element: class="fragment" -->
     - Executables <!-- .element: class="fragment" -->
@@ -126,14 +141,52 @@ copying path '/nix/store/m1p78gqlc0pw3sdbz3rdhklzm0g26g96-stdenv-linux' from 'ht
 
 ---
 
-## The Immutable OS
+## Operating System
+### The Immutable OS
+```nix
+{pkgs, ...}: {
+  imports = [
+    ../../programs/ovpn.nix
+    ../../programs/tailscale.nix
+    ../../misc/laptop.nix
+  ];
+
+  # Bootloader
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+  boot.supportedFilesystems = ["bcachefs"];
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
+  networking.hostName = "mars"; # Define your hostname.
+
+  environment.systemPackages = with pkgs; [
+    protonvpn-gui
+    gnome-keyring
+  ];
+
+  system.stateVersion = "24.05"; # Don't touch me!
+
+  networking.extraHosts = ''
+    192.168.50.126 saturn
+  '';
+
+  services.xserver.videoDrivers = ["amdgpu"];
+}
+```
 
 ---
 
-## Garbage Collecting
+## Operating System
+#### (...and friends)
+- Reproducibility
+- Generations
+- Garbage Collecting
 
 ---
 
-## Generations
-
----
+## What if Nix isn't for me?
+### Home Manager <!-- .element: class="fragment" -->
+- Linux <!-- .element: class="fragment" -->
+- MacOS <!-- .element: class="fragment" -->
+- WSL <!-- .element: class="fragment" -->
+- And of course, NixOS <!-- .element: class="fragment" -->
