@@ -9,7 +9,7 @@
   env.GREET = "Nix Demo";
 
   # https://devenv.sh/packages/
-  packages = [];
+  packages = [pkgs.git];
 
   # https://devenv.sh/languages/
   languages = {
@@ -39,6 +39,11 @@
       echo Welcome to $GREET
       echo
     '';
+    run-ubuntu.exec = ''
+      docker build -t kyokley/ubuntu-with-nix --network=host .
+      docker run --rm -it --net=host kyokley/ubuntu-with-nix /bin/bash
+    '';
+    vim.exec = "nix run github:kyokley/nixvim -- $@";
   };
 
   enterShell = ''
