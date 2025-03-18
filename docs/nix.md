@@ -1,27 +1,138 @@
 ---
 title: Nix The World
+slides:
+    separator_vertical: ^\s*-v-\s*$
 ---
 
-# Nix The World
-### or: How I Learned to Stop Worrying and Love Reproducibility <!-- .element: class="fragment" -->
-
----
-
-## What is Nix?
-- A programming language <!-- .element: class="fragment" -->
-- A package manager <!-- .element: class="fragment" -->
-- An operating system <!-- .element: class="fragment" -->
-- ...A way of life? <!-- .element: class="fragment" -->
+# Nix The World :globe_showing_americas:
+### A tale in 3 parts
 
 ---
 
-## Programming
+## :snowflake: What is Nix? :snowflake:
+1. A programming language <!-- .element: class="fragment" -->
+2. A package manager <!-- .element: class="fragment" -->
+3. An operating system <!-- .element: class="fragment" -->
+
+...A way of life? <!-- .element: class="fragment" -->
+
+---
+
+## :desktop_computer: Programming :desktop_computer:
+### devenv.sh
+```nix [14-24|26-29|48-63]
+{
+  pkgs,
+  lib,
+  config,
+  inputs,
+  ...
+}: {
+  # https://devenv.sh/basics/
+  env.GREET = "Nix Demo";
+
+  # https://devenv.sh/packages/
+  packages = [];
+
+  # https://devenv.sh/languages/
+  languages = {
+    python = {
+      enable = true;
+      version = "3.10";
+      uv = {
+        enable = true;
+        sync.enable = true;
+      };
+    };
+  };
+
+  # https://devenv.sh/processes/
+  processes = {
+    serve.exec = "uv run mkslides serve docs/";
+  };
+
+  containers."nix-demo" = {
+    name = "kyokley/nix-demo";
+    startupCommand = config.processes.serve.exec;
+  };
+
+  # https://devenv.sh/scripts/
+  scripts = {
+    hello.exec = ''
+      echo Welcome to $GREET
+      echo
+    '';
+  };
+
+  enterShell = ''
+    hello
+  '';
+
+  # https://devenv.sh/git-hooks/
+  git-hooks.hooks = {
+    alejandra.enable = true;
+    hadolint.enable = false;
+    check-merge-conflicts.enable = true;
+    check-added-large-files.enable = true;
+    check-toml.enable = true;
+    check-yaml.enable = true;
+    checkmake.enable = true;
+    detect-private-keys.enable = true;
+    ripsecrets.enable = true;
+    ruff-format.enable = true;
+    trim-trailing-whitespace.enable = true;
+    yamlfmt.enable = true;
+    yamllint.enable = false;
+  };
+}
+```
+-v-
+
+## :desktop_computer: Programming :desktop_computer:
 ### ovpn.nix
-```nix
-{ pkgs, lib, ...}: let
-...
+```nix [21-28|42-58|70-78]
+{ pkgs, lib, ... }: let
+  domains = [ ];
+  redsocks-listen-port = "12345";
+  redsocks-config = pkgs.writeText "redsocks.conf" ''
+    base {
+        log_debug = on;
+        log_info = on;
+        daemon = off;
+        redirector = iptables;
+        redsocks_conn_max = 4096;
+    }
 
-    pkgs.writeShellScriptBin "configure-oracle-tunnel" (
+    redsocks {
+        local_ip = 127.0.0.1;
+        local_port = ${redsocks-listen-port};
+        ip = 127.0.0.1;
+        port = 8081;
+        type = socks5;
+    }
+  '';
+  start-tunnel = pkgs.writeShellScriptBin "start-tunnel" ''
+    if [ $(id -u) -ne 0 ]
+      then echo Please run this script as root or using sudo!
+      exit
+    fi
+    iptables-save | grep REDSOCKS >/dev/null 2>&1 || configure-tunnel
+    ${pkgs.redsocks}/bin/redsocks -c ${redsocks-config}
+  '';
+  configure-tunnel = let
+    reserved-ips = [
+      # TODO: add ipv6-equivalent
+      "0.0.0.0/8"
+      "10.0.0.0/8"
+      "127.0.0.0/8"
+      "169.254.0.0/16"
+      "172.16.0.0/12"
+      "192.168.0.0/16"
+      "224.168.0.0/4"
+      "240.168.0.0/4"
+    ];
+  in
+    pkgs.writeShellScriptBin "configure-tunnel" (
       lib.concatStringsSep
       "\n"
       (
@@ -39,27 +150,42 @@ title: Nix The World
         domains
       )
     );
-  stop-oracle-tunnel = pkgs.writeShellScriptBin "stop-oracle-tunnel" ''
+  stop-tunnel = pkgs.writeShellScriptBin "stop-tunnel" ''
     iptables-save | grep -v REDSOCKS | iptables-restore
   '';
+in {
+  environment.systemPackages = [
+    start-tunnel
+    configure-tunnel
+    stop-tunnel
+  ];
 
-...
+  networking.extraHosts = (
+    lib.concatStringsSep "\n" (
+      map (
+        host_record: let
+          host = lib.splitString " " host_record;
+        in "${lib.elemAt host 1} ${lib.elemAt host 0}"
+      )
+      domains
+    )
+  );
 }
 ```
 
 ---
 
-## Packages
+## :package: Packages :package:
 ### Installing libraries
 ```bash
 sh-5.2# nix-shell -p devenv
 ```
 
----
+-v-
 
-## Packages
+## :package: Packages :package:
 ### Installing libraries
-```bash
+```text
 these 33 paths will be fetched (75.63 MiB download, 352.04 MiB unpacked):
   /nix/store/bwkb907myixfzzykp21m9iczkhrq5pfy-binutils-2.43.1
   /nix/store/2qssg7pjgadwmqns6jm3qlr5bbdl4dcr-binutils-2.43.1-lib
@@ -128,11 +254,10 @@ copying path '/nix/store/kzf3sh3qsrwrqvddyacdxz0b8ncn35xr-devenv-1.3.1' from 'ht
 copying path '/nix/store/4apajimszc47rxwcpvc3g3rj2icinl71-gcc-wrapper-13.3.0' from 'https://cache.nixos.org'...
 copying path '/nix/store/m1p78gqlc0pw3sdbz3rdhklzm0g26g96-stdenv-linux' from 'https://cache.nixos.org'...
 ```
-??? <!-- .element: class="fragment" -->
 
 ---
 
-## Packages
+## :package: Packages :package:
 ### Nix Store
 - What lives in the store?
     - Libraries<!-- .element: class="fragment" -->
@@ -141,9 +266,9 @@ copying path '/nix/store/m1p78gqlc0pw3sdbz3rdhklzm0g26g96-stdenv-linux' from 'ht
 
 ---
 
-## Operating System
+## :robot: Operating System :robot:
 ### The Immutable OS
-```nix
+```nix [8-12|23-25|27|16-19|14|2-6]
 {pkgs, ...}: {
   imports = [
     ../../programs/ovpn.nix
@@ -157,7 +282,7 @@ copying path '/nix/store/m1p78gqlc0pw3sdbz3rdhklzm0g26g96-stdenv-linux' from 'ht
   boot.supportedFilesystems = ["bcachefs"];
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  networking.hostName = "mars"; # Define your hostname.
+  networking.hostName = "mars";
 
   environment.systemPackages = with pkgs; [
     protonvpn-gui
@@ -176,7 +301,7 @@ copying path '/nix/store/m1p78gqlc0pw3sdbz3rdhklzm0g26g96-stdenv-linux' from 'ht
 
 ---
 
-## Operating System
+## :robot: Operating System :robot:
 #### (...and friends)
 - Reproducibility
 - Generations
@@ -184,8 +309,8 @@ copying path '/nix/store/m1p78gqlc0pw3sdbz3rdhklzm0g26g96-stdenv-linux' from 'ht
 
 ---
 
-## What if Nix isn't for me?
-### Home Manager <!-- .element: class="fragment" -->
+## What if NixOS isn't for me?
+### Runs on: <!-- .element: class="fragment" -->
 - Linux <!-- .element: class="fragment" -->
 - MacOS <!-- .element: class="fragment" -->
 - WSL <!-- .element: class="fragment" -->
