@@ -14,7 +14,10 @@ slides:
 2. A package manager <!-- .element: class="fragment" -->
 3. An operating system <!-- .element: class="fragment" -->
 
+
 ...A way of life? <!-- .element: class="fragment" -->
+
+<img src="https://nixos-and-flakes.thiscute.world/logo.png" class="r-stretch" />
 
 ---
 
@@ -310,8 +313,22 @@ copying path '/nix/store/m1p78gqlc0pw3sdbz3rdhklzm0g26g96-stdenv-linux' from 'ht
 ---
 
 ## What if NixOS isn't for me?
-### Runs on: <!-- .element: class="fragment" -->
+### Nix Runs on: <!-- .element: class="fragment" -->
 - Linux <!-- .element: class="fragment" -->
 - MacOS <!-- .element: class="fragment" -->
 - WSL <!-- .element: class="fragment" -->
 - And of course, NixOS <!-- .element: class="fragment" -->
+
+---
+
+## Demo
+<img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" class="r-stretch" />
+
+---
+
+## Further Reading
+https://nixos.org/
+
+https://devenv.sh/
+
+https://github.com/kyokley/nixvim
