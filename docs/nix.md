@@ -10,9 +10,9 @@ slides:
 ---
 
 ## :snowflake: What is Nix? :snowflake:
-1. A programming language <!-- .element: class="fragment" -->
-2. A package manager <!-- .element: class="fragment" -->
-3. An operating system <!-- .element: class="fragment" -->
+0. A programming language <!-- .element: class="fragment" -->
+1. A package manager <!-- .element: class="fragment" -->
+2. An operating system <!-- .element: class="fragment" -->
 
 
 ...A way of life? <!-- .element: class="fragment" -->
@@ -89,6 +89,10 @@ slides:
   };
 }
 ```
+
+Notes:
+Nix the programming language
+
 -v-
 
 ## :desktop_computer: Programming :desktop_computer:
@@ -184,6 +188,9 @@ in {
 sh-5.2# nix-shell -p devenv
 ```
 
+Notes:
+Nix the package manager!
+
 -v-
 
 ## :package: Packages :package:
@@ -258,6 +265,19 @@ copying path '/nix/store/4apajimszc47rxwcpvc3g3rj2icinl71-gcc-wrapper-13.3.0' fr
 copying path '/nix/store/m1p78gqlc0pw3sdbz3rdhklzm0g26g96-stdenv-linux' from 'https://cache.nixos.org'...
 ```
 
+-v-
+
+## :package: Packages :package:
+### Anatomy of a Store Entry
+
+/nix/store/bwkb907myixfzzykp21m9iczkhrq5pfy-binutils-2.43.1
+
+Store path: /nix/store/ <!-- .element: class="fragment" -->
+
+Hash: bwkb907myixfzzykp21m9iczkhrq5pfy <!-- .element: class="fragment" -->
+
+Library: binutils-2.43.1 <!-- .element: class="fragment" -->
+
 ---
 
 ## :package: Packages :package:
@@ -300,40 +320,73 @@ Notes: Why does this matter?
   system.stateVersion = "24.05"; # Don't touch me!
 
   networking.extraHosts = ''
-    192.168.50.126 saturn
+    192.168.1.101 saturn
   '';
 
   services.xserver.videoDrivers = ["amdgpu"];
 }
 ```
 
+Notes:
+Nix the Operating System aka NixOS
+
+Show immutability of /etc/hostname
+
 ---
 
 ## :robot: Operating System :robot:
-#### (...and friends)
-- Reproducibility
-- Generations
-- Garbage Collecting
+##### (...and friends)
+### Special Abilities
+- Reproducibility <!-- .element: class="fragment" -->
+- Reusabililty <!-- .element: class="fragment" -->
+- Stability <!-- .element: class="fragment" -->
+- Garbage Collectibility :thinking: <!-- .element: class="fragment" -->
+
+Notes: Why???
+
+Car printer analogy!
+
+Using config files along with nix store guarantees reproducibility.
+
+Modularity gives reusability and composability.
+
+Syntax and consistency checks improve stability. Also configs can live in git. Plus generations!
+
+To demonstrate garbage collecting, run
+`nix-store --gc`
 
 ---
 
-## What if NixOS isn't for me?
-### Nix Runs on: <!-- .element: class="fragment" -->
+## :robot: Operating System :robot:
+### What if NixOS isn't for me?
+#### Nix Runs on: <!-- .element: class="fragment" -->
 - Linux <!-- .element: class="fragment" -->
 - MacOS <!-- .element: class="fragment" -->
 - WSL <!-- .element: class="fragment" -->
-- And of course, NixOS <!-- .element: class="fragment" -->
 
 ---
 
 ## Demo
 <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" class="r-stretch" />
 
+Notes:
+Build ubuntu container
+
+`nix-shell -p git devenv`
+
+Clone git repo and run `devenv shell`
+
+Show `devenv container copy nix-demo` on host
+
 ---
 
 ## Further Reading
 https://nixos.org/
 
+https://nix-community.github.io/home-manager/
+
 https://devenv.sh/
 
 https://github.com/kyokley/nixvim
+
+https://github.com/kyokley/nix-demo
