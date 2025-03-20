@@ -267,6 +267,11 @@ copying path '/nix/store/m1p78gqlc0pw3sdbz3rdhklzm0g26g96-stdenv-linux' from 'ht
     - Executables <!-- .element: class="fragment" -->
     - Even config files <!-- .element: class="fragment" -->
 
+Notes: Why does this matter?
+
+`nix-shell -p postgresql_{13,16}`
+
+`nix-shell -p libreoffice-{still,fresh}`
 ---
 
 ## :robot: Operating System :robot:
