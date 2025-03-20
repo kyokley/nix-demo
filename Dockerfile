@@ -5,6 +5,6 @@ RUN sh /tmp/nix install linux \
            --extra-conf "sandbox = false" \
            --init none \
            --no-confirm && \
-      rm /tmp/nix
+      rm /tmp/nix && \
+      apt-get remove -y curl
 ENV PATH="${PATH}:/nix/var/nix/profiles/default/bin"
-RUN nix run nixpkgs#hello
