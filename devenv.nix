@@ -43,6 +43,10 @@
       docker build -t kyokley/ubuntu-with-nix --network=host .
       docker run --rm -it --net=host kyokley/ubuntu-with-nix /bin/bash
     '';
+    show-ubuntu-cmds.exec = ''
+      echo "docker build -t kyokley/ubuntu-with-nix --network=host ."
+      echo "docker run --rm -it --net=host kyokley/ubuntu-with-nix /bin/bash"
+    '';
     vim.exec = "nix run github:kyokley/nixvim -- $@";
   };
 
