@@ -335,29 +335,6 @@ Show immutability of /etc/hostname
 ---
 
 ## :robot: Operating System :robot:
-##### (...and friends)
-### Special Abilities
-- Reproducibility <!-- .element: class="fragment" -->
-- Reusabililty <!-- .element: class="fragment" -->
-- Stability <!-- .element: class="fragment" -->
-- Garbage Collectibility :thinking: <!-- .element: class="fragment" -->
-
-Notes: Why???
-
-Car printer analogy!
-
-Using config files along with nix store guarantees reproducibility.
-
-Modularity gives reusability and composability.
-
-Syntax and consistency checks improve stability. Also configs can live in git. Plus generations!
-
-To demonstrate garbage collecting, run
-`nix-store --gc`
-
----
-
-## :robot: Operating System :robot:
 ### What if NixOS isn't for me?
 #### Nix Runs on: <!-- .element: class="fragment" -->
 - Linux <!-- .element: class="fragment" -->
@@ -369,6 +346,16 @@ To demonstrate garbage collecting, run
 ## Demo
 <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" class="r-stretch" />
 
+---
+
+## :robot: Operating System :robot:
+##### (...and friends)
+### Special Abilities
+- Reproducibility <!-- .element: class="fragment" -->
+- Reusabililty <!-- .element: class="fragment" -->
+- Stability <!-- .element: class="fragment" -->
+- Garbage Collectibility :thinking: <!-- .element: class="fragment" -->
+
 Notes:
 Build ubuntu container
 
@@ -377,6 +364,20 @@ Build ubuntu container
 Clone git repo and run `devenv shell`
 
 Show `devenv container copy nix-demo` on host
+
+
+WHY???
+
+Car printer analogy!
+
+Using config files along with nix store guarantees reproducibility.
+
+Modularity gives reusability and composability.
+
+Syntax and consistency checks improve stability. Also configs can live in git. Plus generations!
+
+To demonstrate garbage collecting, run
+`nix-store --gc`
 
 ---
 
