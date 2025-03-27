@@ -4,7 +4,10 @@ slides:
     separator_vertical: ^\s*-v-\s*$
 ---
 
-# Nix The World :globe_showing_americas:
+# Nix The World
+
+# :globe_showing_americas:
+
 ### A tale in 3 parts
 
 ---
