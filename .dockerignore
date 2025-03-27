@@ -1,0 +1,4 @@
+.devenv
+.direnv
+.git
+.pre-commit-config.yaml

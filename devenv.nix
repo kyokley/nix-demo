@@ -15,7 +15,7 @@
   languages = {
     python = {
       enable = true;
-      version = "3.10";
+      version = "3.12";
       uv = {
         enable = true;
         sync.enable = true;
@@ -25,7 +25,7 @@
 
   # https://devenv.sh/processes/
   processes = {
-    serve.exec = "uv run mkslides serve docs/";
+    serve.exec = "uvx mkslides serve docs/";
   };
 
   containers."nix-demo" = {

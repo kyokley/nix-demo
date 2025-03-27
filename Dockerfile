@@ -8,3 +8,5 @@ RUN sh /tmp/nix install linux \
       rm /tmp/nix && \
       apt-get remove -y curl
 ENV PATH="${PATH}:/nix/var/nix/profiles/default/bin"
+COPY . /code
+WORKDIR /code
