@@ -105,47 +105,48 @@ Nix the programming language
 ### How to [VPN](https://github.com/kyokley/nix-demo/blob/main/docs/vpn.mermaid)?
 
 ```mermaid
-%%{
-  init: {
-    "flowchart": {
-    "theme": "forest",
-    },
-  }
-}%%
+%%{init: {'theme': 'neutral', "flowchart" : { "curve" : "basis" } } }%%
 
 graph LR
     VPN_REQUEST["cloudlab"]
     INTERNET_REQUEST["*.ftpaccess.com"]
 
-    VPN_REQUEST --> ETC_HOSTS["/etc/hosts"]
+    VPN_REQUEST --> ETC_HOSTS["1: /etc/hosts"]
     INTERNET_REQUEST --> ETC_HOSTS
 
-    IP_TABLES{iptables}
+    IP_TABLES{"2: iptables"}
 
     ETC_HOSTS --> IP_TABLES
     ETC_HOSTS --> DNS
 
     DNS --> IP_TABLES
 
-    IP_TABLES --> REDSOCKS[Redsocks]
+    IP_TABLES --> REDSOCKS["3: Redsocks"]
     subgraph "VM"
         SSH["SSH Server"] --> AnyConnect
     end
-    REDSOCKS --> |socks5| SSH_CLIENT["SSH client"]
+    REDSOCKS --> |socks5| SSH_CLIENT["4: SSH client"]
     SSH_CLIENT --> SSH
     AnyConnect --> OVPN(["Corp Server"])
 
     IP_TABLES --> INTERNET([Internet])
 
+linkStyle default stroke-width:4px,fill:none,stroke:green;
 ```
+Notes:
+*.ftpaccess.com domains are blocked
 
 -v-
 
 ## :desktop_computer: Programming :desktop_computer:
 ### ovpn.nix
-```nix [21-28|42-58|70-78]
-{ pkgs, lib, ... }: let
-  domains = [ ];
+```nix [86-95|47-63|7-24|98-114]
+{
+  pkgs,
+  lib,
+  ...
+}: let
+  domains = [];
   redsocks-listen-port = "12345";
   redsocks-config = pkgs.writeText "redsocks.conf" ''
     base {
@@ -160,56 +161,68 @@ graph LR
         local_ip = 127.0.0.1;
         local_port = ${redsocks-listen-port};
         ip = 127.0.0.1;
-        port = 8081;
+        port = ${vm-socks-port};
         type = socks5;
     }
   '';
-  start-tunnel = pkgs.writeShellScriptBin "start-tunnel" ''
-    if [ $(id -u) -ne 0 ]
-      then echo Please run this script as root or using sudo!
-      exit
-    fi
-    iptables-save | grep REDSOCKS >/dev/null 2>&1 || configure-tunnel
-    ${pkgs.redsocks}/bin/redsocks -c ${redsocks-config}
-  '';
-  configure-tunnel = let
-    reserved-ips = [
-      # TODO: add ipv6-equivalent
-      "0.0.0.0/8"
-      "10.0.0.0/8"
-      "127.0.0.0/8"
-      "169.254.0.0/16"
-      "172.16.0.0/12"
-      "192.168.0.0/16"
-      "224.168.0.0/4"
-      "240.168.0.0/4"
-    ];
-  in
-    pkgs.writeShellScriptBin "configure-tunnel" (
-      lib.concatStringsSep
-      "\n"
-      (
-        [
-          "iptables -t nat -N REDSOCKS || true"
-        ]
-        ++ map (x: "iptables -t nat -A REDSOCKS -d " + x + " -j RETURN || true") reserved-ips
-        ++ [
-          "iptables -t nat -A REDSOCKS -p tcp -j REDIRECT --to-ports ${redsocks-listen-port} || true"
-          ''iptables -t nat -A PREROUTING -i docker0 -p tcp -j DNAT --to-destination 127.0.0.1:${redsocks-listen-port} -m comment --comment "REDSOCKS docker rule" || true''
-        ]
-        ++ map (host_record: let
-          host = lib.splitString " " host_record;
-        in "iptables -t nat -A OUTPUT -p tcp -d ${lib.elemAt host 1}/32 -j REDSOCKS || true")
-        domains
-      )
-    );
   stop-tunnel = pkgs.writeShellScriptBin "stop-tunnel" ''
-    iptables-save | grep -v REDSOCKS | iptables-restore
+    ${pkgs.iptables}/bin/iptables-save | grep -v REDSOCKS | ${pkgs.iptables}/bin/iptables-restore
   '';
+  start-tunnel = (
+    pkgs.writeShellScriptBin
+    "start-tunnel"
+    (
+      let
+        configure-tunnel = (
+          let
+            reserved-ips = [
+              # TODO: add ipv6-equivalent
+              "0.0.0.0/8"
+              "10.0.0.0/8"
+              "127.0.0.0/8"
+              "169.254.0.0/16"
+              "172.16.0.0/12"
+              "192.168.0.0/16"
+              "224.168.0.0/4"
+              "240.168.0.0/4"
+            ];
+          in
+            pkgs.writeShellScriptBin "configure-tunnel" (
+              lib.concatStringsSep
+              "\n"
+              (
+                [
+                  "${pkgs.iptables}/bin/iptables -t nat -N REDSOCKS || true"
+                ]
+                ++ map (x: "${pkgs.iptables}/bin/iptables -t nat -A REDSOCKS -d " + x + " -j RETURN || true") reserved-ips
+                ++ [
+                  "${pkgs.iptables}/bin/iptables -t nat -A REDSOCKS -p tcp -j REDIRECT --to-ports ${redsocks-listen-port} || true"
+                  ''${pkgs.iptables}/bin/iptables -t nat -A PREROUTING -i docker0 -p tcp -j DNAT --to-destination 127.0.0.1:${redsocks-listen-port} -m comment --comment "REDSOCKS docker rule" || true''
+                ]
+                ++ map (host_record: let
+                  host = lib.splitString " " host_record;
+                in "${pkgs.iptables}/bin/iptables -t nat -A OUTPUT -p tcp -d ${lib.elemAt host 1}/32 -j REDSOCKS || true")
+                domains
+              )
+            )
+        );
+      in ''
+        if [ $(id -u) -ne 0 ]
+          then echo Please run this script as root or using sudo!
+          exit
+        fi
+        ${pkgs.iptables}/bin/iptables-save | grep REDSOCKS >/dev/null 2>&1 || ${configure-tunnel}/bin/configure-tunnel
+        ${pkgs.redsocks}/bin/redsocks -c ${redsocks-config}
+      ''
+    )
+  );
+  user = "yokley";
+  vm-ip = "127.0.0.1";
+  vm-port = "3022";
+  vm-socks-port = "8081";
 in {
   environment.systemPackages = [
     start-tunnel
-    configure-tunnel
     stop-tunnel
   ];
 
@@ -223,6 +236,39 @@ in {
       domains
     )
   );
+
+  systemd.services = {
+    ssh-tunnel = {
+      enable = true;
+      description = "Tunnels for VPN";
+      serviceConfig = {
+        Type = "simple";
+        User = "${user}";
+      };
+      script = toString (
+        pkgs.writeShellScript "ssh-tunnel" ''
+          ${pkgs.wait4x}/bin/wait4x tcp ${vm-ip}:${vm-port} --timeout 0 --interval 10s
+          ${pkgs.openssh}/bin/ssh -p ${vm-port} ${user}@${vm-ip} -D ${vm-socks-port} -Nv
+        ''
+      );
+      wants = ["network-online.target"];
+      after = ["network-online.target"];
+      wantedBy = ["multi-user.target"];
+    };
+
+    redirect-traffic = {
+      enable = true;
+      description = "Redsocks redirect traffic";
+      serviceConfig = {
+        Type = "simple";
+      };
+      script = "${start-tunnel}/bin/start-tunnel";
+      postStop = "${stop-tunnel}/bin/stop-tunnel";
+      wants = ["network-online.target"];
+      after = ["network-online.target"];
+      wantedBy = ["multi-user.target"];
+    };
+  };
 }
 ```
 
