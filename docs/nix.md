@@ -2,6 +2,10 @@
 title: Nix The World
 slides:
     separator_vertical: ^\s*-v-\s*$
+plugins:
+    - name: RevealMermaid
+      extra_javascript:
+          - https://cdn.jsdelivr.net/npm/reveal.js-mermaid-plugin/plugin/mermaid/mermaid.min.js
 ---
 
 # Nix The World
@@ -95,6 +99,44 @@ slides:
 
 Notes:
 Nix the programming language
+
+-v-
+## :desktop_computer: Programming :desktop_computer:
+### How to VPN?
+
+```mermaid
+%%{
+  init: {
+    "flowchart": {
+    },
+  }
+}%%
+
+graph LR
+    VPN_REQUEST["cloudlab"]
+    INTERNET_REQUEST["docker.com"]
+
+    VPN_REQUEST --> ETC_HOSTS["/etc/hosts"]
+    INTERNET_REQUEST --> ETC_HOSTS
+
+    IP_TABLES{iptables}
+
+    ETC_HOSTS --> IP_TABLES
+    ETC_HOSTS --> DNS
+
+    DNS --> IP_TABLES
+
+    IP_TABLES --> REDSOCKS[Redsocks]
+    subgraph "VM"
+        SSH["SSH Server"] --> AnyConnect
+    end
+    REDSOCKS --> |socks5| SSH_CLIENT["SSH client"]
+    SSH_CLIENT --> SSH
+    AnyConnect --> OVPN(["Corp Server"])
+
+    IP_TABLES --> INTERNET([Internet])
+
+```
 
 -v-
 
