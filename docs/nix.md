@@ -102,19 +102,20 @@ Nix the programming language
 
 -v-
 ## :desktop_computer: Programming :desktop_computer:
-### How to VPN?
+### How to [VPN](https://github.com/kyokley/nix-demo)?
 
 ```mermaid
 %%{
   init: {
     "flowchart": {
+    "theme": "forest",
     },
   }
 }%%
 
 graph LR
     VPN_REQUEST["cloudlab"]
-    INTERNET_REQUEST["docker.com"]
+    INTERNET_REQUEST["*.ftpaccess.com"]
 
     VPN_REQUEST --> ETC_HOSTS["/etc/hosts"]
     INTERNET_REQUEST --> ETC_HOSTS

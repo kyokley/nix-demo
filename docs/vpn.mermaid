@@ -1,0 +1,31 @@
+%%{
+  init: {
+    "flowchart": {
+    "theme": "forest",
+    },
+  }
+}%%
+
+graph LR
+    VPN_REQUEST["cloudlab"]
+    INTERNET_REQUEST["*.ftpaccess.com"]
+
+    VPN_REQUEST --> ETC_HOSTS["/etc/hosts"]
+    INTERNET_REQUEST --> ETC_HOSTS
+
+    IP_TABLES{iptables}
+
+    ETC_HOSTS --> IP_TABLES
+    ETC_HOSTS --> DNS
+
+    DNS --> IP_TABLES
+
+    IP_TABLES --> REDSOCKS[Redsocks]
+    subgraph "VM"
+        SSH["SSH Server"] --> AnyConnect
+    end
+    REDSOCKS --> |socks5| SSH_CLIENT["SSH client"]
+    SSH_CLIENT --> SSH
+    AnyConnect --> OVPN(["Corp Server"])
+
+    IP_TABLES --> INTERNET([Internet])
