@@ -102,7 +102,7 @@ Nix the programming language
 
 -v-
 ## :desktop_computer: Programming :desktop_computer:
-### How to [VPN](https://github.com/kyokley/nix-demo)?
+### How to [VPN](https://github.com/kyokley/nix-demo/blob/main/docs/vpn.mermaid)?
 
 ```mermaid
 %%{
