@@ -21,7 +21,6 @@ plugins:
 1. A package manager <!-- .element: class="fragment" -->
 2. An operating system <!-- .element: class="fragment" -->
 
-
 ...A way of life? <!-- .element: class="fragment" -->
 
 <img src="https://nixos-and-flakes.thiscute.world/logo.png" class="r-stretch" />
@@ -30,7 +29,7 @@ plugins:
 
 ## :desktop_computer: Programming :desktop_computer:
 ### devenv.sh
-```nix [14-24|26-29|48-63]
+```nix [12-23|25-27|45-59]
 {
   pkgs,
   lib,
@@ -38,27 +37,25 @@ plugins:
   inputs,
   ...
 }: {
-  # https://devenv.sh/basics/
   env.GREET = "Nix Demo";
 
-  # https://devenv.sh/packages/
   packages = [];
 
-  # https://devenv.sh/languages/
   languages = {
     python = {
       enable = true;
       version = "3.10";
       uv = {
         enable = true;
-        sync.enable = true;
+        sync = {
+            enable = true;
+        };
       };
     };
   };
 
-  # https://devenv.sh/processes/
   processes = {
-    serve.exec = "uv run mkslides serve docs/";
+    serve.exec = "uvx mkslides serve docs/";
   };
 
   containers."nix-demo" = {
@@ -66,7 +63,6 @@ plugins:
     startupCommand = config.processes.serve.exec;
   };
 
-  # https://devenv.sh/scripts/
   scripts = {
     hello.exec = ''
       echo Welcome to $GREET
@@ -78,7 +74,6 @@ plugins:
     hello
   '';
 
-  # https://devenv.sh/git-hooks/
   git-hooks.hooks = {
     alejandra.enable = true;
     hadolint.enable = false;
@@ -470,6 +465,13 @@ Syntax and consistency checks improve stability. Also configs can live in git. P
 
 To demonstrate garbage collecting, run
 `nix-store --gc`
+
+---
+
+## :woozy_face: Disadvantages :face_with_spiral_eyes:
+- Confusing error messages <!-- .element: class="fragment" -->
+- Documentation is lacking <!-- .element: class="fragment" -->
+- Steep learning curve <!-- .element: class="fragment" -->
 
 ---
 
