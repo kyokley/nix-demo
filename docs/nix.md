@@ -104,7 +104,7 @@ Nix the programming language
 
 graph LR
     VPN_REQUEST["cloudlab"]
-    INTERNET_REQUEST["*.ftpaccess.com"]
+    INTERNET_REQUEST["*.ftpaccess.cc"]
 
     VPN_REQUEST --> ETC_HOSTS["1: /etc/hosts"]
     INTERNET_REQUEST --> ETC_HOSTS
@@ -129,13 +129,13 @@ graph LR
 linkStyle default stroke-width:4px,fill:none,stroke:green;
 ```
 Notes:
-*.ftpaccess.com domains are blocked
+*.ftpaccess.cc domains are blocked
 
 -v-
 
 ## :desktop_computer: Programming :desktop_computer:
 ### ovpn.nix
-```nix [86-95|47-63|7-24|98-114]
+```nix [86-95|47-63|7-24|97-114]
 {
   pkgs,
   lib,
@@ -418,6 +418,14 @@ Notes:
 Nix the Operating System aka NixOS
 
 Show immutability of /etc/hostname
+
+Other Immutable OSes:
+3. 1. NixOS / Guix
+3. 2. Endless OS
+3. 3. Fedora Silverblue
+3. 4. OpenSUSE MicroOS / Aeon
+3. 5. Vanilla OS
+3. 6. Alpine Linux (with LBU)
 
 ---
 
