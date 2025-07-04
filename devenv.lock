@@ -3,10 +3,10 @@
     "devenv": {
       "locked": {
         "dir": "src/modules",
-        "lastModified": 1742147141,
+        "lastModified": 1751595634,
         "owner": "cachix",
         "repo": "devenv",
-        "rev": "e1eb23d427a3a0871c277268a28163898fd37266",
+        "rev": "9b542934395151747a97d8dec86b2e280dfbc197",
         "type": "github"
       },
       "original": {
@@ -19,10 +19,10 @@
     "flake-compat": {
       "flake": false,
       "locked": {
-        "lastModified": 1733328505,
+        "lastModified": 1747046372,
         "owner": "edolstra",
         "repo": "flake-compat",
-        "rev": "ff81ac966bb2cae68946d5ed5fc4994f96d0ffec",
+        "rev": "9100a0f413b0c601e0533d1d94ffd501ce2e7885",
         "type": "github"
       },
       "original": {
@@ -34,32 +34,15 @@
     "flake-compat_2": {
       "flake": false,
       "locked": {
-        "lastModified": 1733328505,
+        "lastModified": 1747046372,
         "owner": "edolstra",
         "repo": "flake-compat",
-        "rev": "ff81ac966bb2cae68946d5ed5fc4994f96d0ffec",
+        "rev": "9100a0f413b0c601e0533d1d94ffd501ce2e7885",
         "type": "github"
       },
       "original": {
         "owner": "edolstra",
         "repo": "flake-compat",
-        "type": "github"
-      }
-    },
-    "flake-utils": {
-      "inputs": {
-        "systems": "systems"
-      },
-      "locked": {
-        "lastModified": 1731533236,
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
         "type": "github"
       }
     },
@@ -72,10 +55,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1742058297,
+        "lastModified": 1750779888,
         "owner": "cachix",
         "repo": "git-hooks.nix",
-        "rev": "59f17850021620cd348ad2e9c0c64f4e6325ce2a",
+        "rev": "16ec914f6fb6f599ce988427d9d94efddf25fe6d",
         "type": "github"
       },
       "original": {
@@ -120,16 +103,15 @@
     },
     "nix2container": {
       "inputs": {
-        "flake-utils": "flake-utils",
         "nixpkgs": [
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1739638901,
+        "lastModified": 1749158376,
         "owner": "nlewo",
         "repo": "nix2container",
-        "rev": "50818838feff20902ff9004dcdef1aeb7098e488",
+        "rev": "0f8974c58755dba441df03598eefd1e1cd50e341",
         "type": "github"
       },
       "original": {
@@ -140,10 +122,10 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1733477122,
+        "lastModified": 1750441195,
         "owner": "cachix",
         "repo": "devenv-nixpkgs",
-        "rev": "7bd9e84d0452f6d2e63b6e6da29fe73fac951857",
+        "rev": "0ceffe312871b443929ff3006960d29b120dc627",
         "type": "github"
       },
       "original": {
@@ -161,10 +143,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1733319315,
+        "lastModified": 1749760516,
         "owner": "cachix",
         "repo": "nixpkgs-python",
-        "rev": "01263eeb28c09f143d59cd6b0b7c4cc8478efd48",
+        "rev": "908dbb466af5955ea479ac95953333fd64387216",
         "type": "github"
       },
       "original": {
@@ -184,20 +166,6 @@
         "pre-commit-hooks": [
           "git-hooks"
         ]
-      }
-    },
-    "systems": {
-      "locked": {
-        "lastModified": 1681028828,
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
       }
     }
   },
