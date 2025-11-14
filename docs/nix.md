@@ -134,134 +134,438 @@ Notes:
 -v-
 
 ## :desktop_computer: Programming :desktop_computer:
-### ovpn.nix
-```nix [86-95|47-63|7-24|97-114]
+### flake.nix
+```nix [22-95|97-189|190-256|267-430]
 {
-  pkgs,
-  lib,
-  ...
-}: let
-  domains = [];
-  redsocks-listen-port = "12345";
-  redsocks-config = pkgs.writeText "redsocks.conf" ''
-    base {
-        log_debug = on;
-        log_info = on;
-        daemon = off;
-        redirector = iptables;
-        redsocks_conn_max = 4096;
-    }
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-    redsocks {
-        local_ip = 127.0.0.1;
-        local_port = ${redsocks-listen-port};
-        ip = 127.0.0.1;
-        port = ${vm-socks-port};
-        type = socks5;
-    }
-  '';
-  stop-tunnel = pkgs.writeShellScriptBin "stop-tunnel" ''
-    ${pkgs.iptables}/bin/iptables-save | grep -v REDSOCKS | ${pkgs.iptables}/bin/iptables-restore
-  '';
-  start-tunnel = (
-    pkgs.writeShellScriptBin
-    "start-tunnel"
-    (
-      let
-        configure-tunnel = (
-          let
-            reserved-ips = [
-              # TODO: add ipv6-equivalent
-              "0.0.0.0/8"
-              "10.0.0.0/8"
-              "127.0.0.0/8"
-              "169.254.0.0/16"
-              "172.16.0.0/12"
-              "192.168.0.0/16"
-              "224.168.0.0/4"
-              "240.168.0.0/4"
-            ];
-          in
-            pkgs.writeShellScriptBin "configure-tunnel" (
-              lib.concatStringsSep
-              "\n"
-              (
-                [
-                  "${pkgs.iptables}/bin/iptables -t nat -N REDSOCKS || true"
-                ]
-                ++ map (x: "${pkgs.iptables}/bin/iptables -t nat -A REDSOCKS -d " + x + " -j RETURN || true") reserved-ips
-                ++ [
-                  "${pkgs.iptables}/bin/iptables -t nat -A REDSOCKS -p tcp -j REDIRECT --to-ports ${redsocks-listen-port} || true"
-                  ''${pkgs.iptables}/bin/iptables -t nat -A PREROUTING -i docker0 -p tcp -j DNAT --to-destination 127.0.0.1:${redsocks-listen-port} -m comment --comment "REDSOCKS docker rule" || true''
-                ]
-                ++ map (host_record: let
-                  host = lib.splitString " " host_record;
-                in "${pkgs.iptables}/bin/iptables -t nat -A OUTPUT -p tcp -d ${lib.elemAt host 1}/32 -j REDSOCKS || true")
+  outputs = {
+    self,
+    nixpkgs,
+  }: let
+    pkgs = import nixpkgs {system = "x86_64-linux";};
+    lib = nixpkgs.lib;
+    default-vm-ip = "127.0.0.1";
+    default-vm-port = 3022;
+    default-socks-port = 8081;
+    default-redsocks-port = 12345;
+  in {
+    nixosModules.default = {
+      config,
+      lib,
+      pkgs,
+      ...
+    }: {
+      options.ovpn = {
+        enable = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+          description = ''
+            Whether to enable the ovpn service
+          '';
+        };
+
+        user = lib.mkOption {
+          type = lib.types.str;
+          description = ''
+            User to run services as
+          '';
+        };
+
+        vm-ip = lib.mkOption {
+          type = lib.types.str;
+          default = default-vm-ip;
+          description = ''
+            Virtual machine IP address
+          '';
+        };
+
+        vm-port = lib.mkOption {
+          type = lib.types.int;
+          default = default-vm-port;
+          description = ''
+            Virtual machine SSH port
+          '';
+        };
+
+        socks-port = lib.mkOption {
+          type = lib.types.int;
+          default = default-socks-port;
+          description = ''
+            Host SOCKS proxy port
+          '';
+        };
+
+        redsocks-port = lib.mkOption {
+          type = lib.types.int;
+          default = default-redsocks-port;
+          description = ''
+            Host redsocks port
+          '';
+        };
+
+        local-ips = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = ["127.0.0.1"];
+          description = ''
+            Host IPs to bind redsocks and SSH proxy to
+          '';
+        };
+
+        extra-domains = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [];
+          description = ''
+            Extra domains for tunneling. Should be given as a list of strs with host and IP separated by a space as follows:
+            [
+              "example.com 10.0.0.123"
+            ]
+          '';
+        };
+
+        extra-ssh-command = lib.mkOption {
+          type = lib.types.str;
+          default = "";
+          description = ''
+            String of additional ssh commands
+          '';
+        };
+      };
+
+      config = let
+        domains =
+          (import ./domains.nix)
+          ++ config.ovpn.extra-domains;
+        redsocks-config = pkgs.writeText "redsocks.conf" (
+          lib.concatStringsSep "\n"
+          (
+            [
+              ''
+                base {
+                    log_debug = on;
+                    log_info = on;
+                    daemon = off;
+                    redirector = iptables;
+                    redsocks_conn_max = 4096;
+                }
+              ''
+            ]
+            ++ (
+              map (local_ip: ''
+                redsocks {
+                    local_ip = ${local_ip};
+                    local_port = ${toString config.ovpn.redsocks-port};
+                    // ip and port refer to host SSH proxy listener
+                    ip = 127.0.0.1;
+                    port = ${toString config.ovpn.socks-port};
+                    type = socks5;
+                }
+              '')
+              config.ovpn.local-ips
+            )
+          )
+        );
+        stop-oracle-tunnel = pkgs.writeShellScriptBin "stop-oracle-tunnel" ''
+          ${pkgs.iptables}/bin/iptables-save | grep -v REDSOCKS | ${pkgs.iptables}/bin/iptables-restore
+        '';
+        start-oracle-tunnel = (
+          pkgs.writeShellScriptBin
+          "start-oracle-tunnel"
+          (
+            let
+              configure-oracle-tunnel = (
+                let
+                  reserved-ips = [
+                    # TODO: add ipv6-equivalent
+                    "0.0.0.0/8"
+                    "10.0.0.0/8"
+                    "127.0.0.0/8"
+                    "169.254.0.0/16"
+                    "172.16.0.0/12"
+                    "192.168.0.0/16"
+                    "224.168.0.0/4"
+                    "240.168.0.0/4"
+                  ];
+                in
+                  pkgs.writeShellScriptBin "configure-oracle-tunnel" (
+                    lib.concatStringsSep
+                    "\n"
+                    (
+                      [
+                        "${pkgs.iptables}/bin/iptables -t nat -N REDSOCKS || true"
+                      ]
+                      ++ (map (x: "${pkgs.iptables}/bin/iptables -t nat -A REDSOCKS -d " + x + " -j RETURN || true") reserved-ips)
+                      ++ [
+                        "${pkgs.iptables}/bin/iptables -t nat -A REDSOCKS -p tcp --dport ${toString config.ovpn.redsocks-port} -j RETURN || true"
+                      ]
+                      ++ (map (host_record: let
+                          host = lib.splitString " " host_record;
+                        in ''
+                          ${pkgs.iptables}/bin/iptables -t nat -A OUTPUT -p tcp -d ${lib.elemAt host 1}/32 -j REDSOCKS || true
+                          ${pkgs.iptables}/bin/iptables -t nat -A PREROUTING -i docker0 -p tcp -d ${lib.elemAt host 1}/32 -j REDSOCKS || true
+                          ${pkgs.iptables}/bin/iptables -t nat -A PREROUTING -i br+ -p tcp -d ${lib.elemAt host 1}/32 -j REDSOCKS || true
+                        '')
+                        domains)
+                      ++ [
+                        "${pkgs.iptables}/bin/iptables -t nat -A REDSOCKS -p tcp -j REDIRECT --to-ports ${toString config.ovpn.redsocks-port} || true"
+                        ''${pkgs.iptables}/bin/iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -m comment --comment "REDSOCKS ESTABLISHED" || true''
+                      ]
+                    )
+                  )
+              );
+            in ''
+              if [ $(id -u) -ne 0 ]
+                then echo Please run this script as root or using sudo!
+                exit
+              fi
+              ${pkgs.iptables}/bin/iptables-save | grep REDSOCKS >/dev/null 2>&1 || ${configure-oracle-tunnel}/bin/configure-oracle-tunnel
+              ${pkgs.wait4x}/bin/wait4x tcp ${lib.elemAt config.ovpn.local-ips 0}:${toString config.ovpn.socks-port} --timeout 0 --interval 10s
+              ${pkgs.redsocks}/bin/redsocks -c ${redsocks-config}
+            ''
+          )
+        );
+      in
+        lib.mkIf config.ovpn.enable {
+          networking = {
+            extraHosts = (
+              lib.concatStringsSep "\n" (
+                map (
+                  host_record: let
+                    host = lib.splitString " " host_record;
+                  in "${lib.elemAt host 1} ${lib.elemAt host 0}"
+                )
                 domains
               )
-            )
-        );
-      in ''
-        if [ $(id -u) -ne 0 ]
-          then echo Please run this script as root or using sudo!
-          exit
-        fi
-        ${pkgs.iptables}/bin/iptables-save | grep REDSOCKS >/dev/null 2>&1 || ${configure-tunnel}/bin/configure-tunnel
-        ${pkgs.redsocks}/bin/redsocks -c ${redsocks-config}
-      ''
-    )
-  );
-  user = "yokley";
-  vm-ip = "127.0.0.1";
-  vm-port = "3022";
-  vm-socks-port = "8081";
-in {
-  environment.systemPackages = [
-    start-tunnel
-    stop-tunnel
-  ];
+            );
+            firewall.allowedTCPPorts = [
+              config.ovpn.redsocks-port
+              config.ovpn.socks-port
+            ];
+          };
 
-  networking.extraHosts = (
-    lib.concatStringsSep "\n" (
-      map (
-        host_record: let
-          host = lib.splitString " " host_record;
-        in "${lib.elemAt host 1} ${lib.elemAt host 0}"
-      )
-      domains
-    )
-  );
+          systemd.services = {
+            oracle-ssh-tunnel = {
+              enable = true;
+              description = "Tunnels for Oracle VPN";
+              serviceConfig = {
+                Type = "simple";
+                User = "${config.ovpn.user}";
+              };
+              script = toString (
+                pkgs.writeShellScript "oracle-ssh-tunnel" (
+                  let
+                    ssh_cmd = lib.concatStringsSep " " [
+                      "${pkgs.openssh}/bin/ssh ${config.ovpn.extra-ssh-command} -Nv -p ${toString config.ovpn.vm-port} ${config.ovpn.user}@${config.ovpn.vm-ip}"
+                      (
+                        lib.concatStringsSep " " (
+                          map
+                          (local-ip: "-D ${local-ip}:${toString config.ovpn.socks-port}")
+                          config.ovpn.local-ips
+                        )
+                      )
+                    ];
+                  in ''
+                    ${pkgs.wait4x}/bin/wait4x tcp ${config.ovpn.vm-ip}:${toString config.ovpn.vm-port} --timeout 0 --interval 10s
+                    ${ssh_cmd}
+                  ''
+                )
+              );
+              wants = ["network-online.target"];
+              after = ["network-online.target"];
+              wantedBy = ["multi-user.target"];
+            };
 
-  systemd.services = {
-    ssh-tunnel = {
-      enable = true;
-      description = "Tunnels for VPN";
-      serviceConfig = {
-        Type = "simple";
-        User = "${user}";
-      };
-      script = toString (
-        pkgs.writeShellScript "ssh-tunnel" ''
-          ${pkgs.wait4x}/bin/wait4x tcp ${vm-ip}:${vm-port} --timeout 0 --interval 10s
-          ${pkgs.openssh}/bin/ssh -p ${vm-port} ${user}@${vm-ip} -D ${vm-socks-port} -Nv
-        ''
-      );
-      wants = ["network-online.target"];
-      after = ["network-online.target"];
-      wantedBy = ["multi-user.target"];
+            oracle-redirect-traffic = {
+              enable = true;
+              description = "Redsocks redirect Oracle traffic";
+              serviceConfig = {
+                Type = "simple";
+              };
+              script = ''
+                ${pkgs.wait4x}/bin/wait4x tcp ${config.ovpn.vm-ip}:${toString config.ovpn.vm-port} --timeout 0 --interval 10s
+                ${start-oracle-tunnel}/bin/start-oracle-tunnel
+              '';
+              postStop = "${stop-oracle-tunnel}/bin/stop-oracle-tunnel";
+              wants = ["network-online.target"];
+              after = ["network-online.target"];
+              wantedBy = ["multi-user.target"];
+            };
+          };
+        };
     };
 
-    redirect-traffic = {
-      enable = true;
-      description = "Redsocks redirect traffic";
-      serviceConfig = {
-        Type = "simple";
+    checks.x86_64-linux = let
+      externalHostAddress = "80.100.100.1";
+      externalVMAddress = "80.100.100.2";
+      externalServerAddress = "80.100.100.3";
+
+      internalVMAddress = "80.100.101.1";
+      internalServerAddress = "80.100.101.2";
+    in {
+      moduleTest = pkgs.testers.runNixOSTest {
+        name = "moduleTest";
+        nodes = {
+          host = {
+            imports = [self.nixosModules.default];
+            ovpn = {
+              enable = true;
+              user = "root";
+              vm-ip = externalVMAddress;
+              extra-ssh-command = "-o StrictHostKeyChecking=no";
+              extra-domains = ["internal.example.com ${internalServerAddress}"];
+            };
+            virtualisation.vlans = [2];
+            networking.interfaces.eth1.ipv4.addresses = [
+              {
+                address = externalHostAddress;
+                prefixLength = 24;
+              }
+            ];
+            networking.extraHosts = lib.mkAfter ''
+              ${externalServerAddress} external.example.com
+            '';
+          };
+
+          vm = {pkgs, ...}: {
+            services.openssh = {
+              enable = true;
+              settings = {
+                PermitRootLogin = "yes";
+                PermitEmptyPasswords = "yes";
+              };
+              ports = [default-vm-port];
+            };
+
+            networking = {
+              firewall = {
+                enable = true;
+                allowedTCPPorts = [default-vm-port];
+                extraCommands = ''
+                  iptables -A OUTPUT -p tcp -d ${externalServerAddress} --dport 80 -j DROP
+                  iptables -A OUTPUT -p tcp -d ${externalServerAddress} --dport 443 -j DROP
+                '';
+              };
+              nat = {
+                enable = true;
+                internalInterfaces = ["eth1"];
+                externalInterface = "eth2";
+              };
+            };
+
+            users.users.root.hashedPassword = ""; # "" means passwordless login
+            security.pam.services.sshd.allowNullPassword = true;
+            virtualisation.vlans = [1 2];
+            networking.interfaces = {
+              eth1.ipv4.addresses = [
+                {
+                  address = internalVMAddress;
+                  prefixLength = 24;
+                }
+              ];
+              eth2.ipv4.addresses = [
+                {
+                  address = externalVMAddress;
+                  prefixLength = 24;
+                }
+              ];
+            };
+          };
+
+          internal_server = {
+            virtualisation.vlans = [1];
+            networking = {
+              interfaces.eth1.ipv4.addresses = [
+                {
+                  address = internalServerAddress;
+                  prefixLength = 24;
+                }
+              ];
+              firewall.allowedTCPPorts = [80];
+            };
+
+            services.nginx = {
+              enable = true;
+              virtualHosts."internal_server" = {
+                root = pkgs.writeTextDir "index.html" ''
+                  <html>
+                    <body>
+                      <h1>Internal only resource</h1>
+                    </body>
+                  </html>
+                '';
+              };
+            };
+          };
+
+          external_server = {
+            virtualisation.vlans = [2];
+            networking = {
+              interfaces.eth1.ipv4.addresses = [
+                {
+                  address = externalServerAddress;
+                  prefixLength = 24;
+                }
+              ];
+              firewall.allowedTCPPorts = [80];
+            };
+
+            services.nginx = {
+              enable = true;
+              virtualHosts."external_server" = {
+                root = pkgs.writeTextDir "index.html" ''
+                  <html>
+                    <body>
+                      <h1>External available resource</h1>
+                    </body>
+                  </html>
+                '';
+              };
+            };
+          };
+        };
+
+        testScript = ''
+          def test_curl(machine_succeed_or_fail, url, expected_str):
+              return machine_succeed_or_fail(
+                f"curl --max-time 5 http://{url}/ | grep '{expected_str}'"
+              )
+
+          # Bring up all services
+          start_all()
+          vm.wait_for_open_port(${toString default-vm-port})
+          host.wait_for_open_port(${toString default-socks-port})
+          host.wait_for_open_port(${toString default-redsocks-port})
+          internal_server.wait_for_open_port(80)
+          external_server.wait_for_open_port(80)
+
+          # Check configs were updated as expected
+          host.succeed("grep oracle /etc/hosts")
+          host.succeed("iptables-save | grep REDSOCKS")
+
+          # Confirm vm can only access internal resources
+          test_curl(vm.fail, "${externalServerAddress}", "External available resource")
+          test_curl(vm.succeed, "${internalServerAddress}", "Internal only resource")
+
+          # Confirm the host can access all resources (internal ones through the vm)
+          test_curl(host.succeed, "internal.example.com", "Internal only resource")
+          test_curl(host.succeed, "external.example.com", "External available resource")
+          test_curl(host.succeed, "${internalServerAddress}", "Internal only resource")  # Resources by IP
+          test_curl(host.succeed, "${externalServerAddress}", "External available resource")
+
+          # Bring down tunneling services
+          host.systemctl("stop oracle-ssh-tunnel")
+          host.systemctl("stop oracle-redirect-traffic")
+
+          host.wait_for_closed_port(${toString default-socks-port})
+          host.wait_for_closed_port(${toString default-redsocks-port})
+
+          # Check that external resource is still available but not internal
+          test_curl(host.succeed, "${externalServerAddress}", "External available resource")
+          test_curl(host.succeed, "external.example.com", "External available resource")
+          test_curl(host.fail, "internal.example.com", "Internal only resource")
+          test_curl(host.fail, "${internalServerAddress}", "Internal only resource")  # Internal resource by IP
+        '';
       };
-      script = "${start-tunnel}/bin/start-tunnel";
-      postStop = "${stop-tunnel}/bin/stop-tunnel";
-      wants = ["network-online.target"];
-      after = ["network-online.target"];
-      wantedBy = ["multi-user.target"];
     };
   };
 }
