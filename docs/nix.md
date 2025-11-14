@@ -265,15 +265,15 @@ Notes:
             )
           )
         );
-        stop-oracle-tunnel = pkgs.writeShellScriptBin "stop-oracle-tunnel" ''
+        stop-ovpn-tunnel = pkgs.writeShellScriptBin "stop-ovpn-tunnel" ''
           ${pkgs.iptables}/bin/iptables-save | grep -v REDSOCKS | ${pkgs.iptables}/bin/iptables-restore
         '';
-        start-oracle-tunnel = (
+        start-ovpn-tunnel = (
           pkgs.writeShellScriptBin
-          "start-oracle-tunnel"
+          "start-ovpn-tunnel"
           (
             let
-              configure-oracle-tunnel = (
+              configure-ovpn-tunnel = (
                 let
                   reserved-ips = [
                     # TODO: add ipv6-equivalent
@@ -287,7 +287,7 @@ Notes:
                     "240.168.0.0/4"
                   ];
                 in
-                  pkgs.writeShellScriptBin "configure-oracle-tunnel" (
+                  pkgs.writeShellScriptBin "configure-ovpn-tunnel" (
                     lib.concatStringsSep
                     "\n"
                     (
@@ -318,7 +318,7 @@ Notes:
                 then echo Please run this script as root or using sudo!
                 exit
               fi
-              ${pkgs.iptables}/bin/iptables-save | grep REDSOCKS >/dev/null 2>&1 || ${configure-oracle-tunnel}/bin/configure-oracle-tunnel
+              ${pkgs.iptables}/bin/iptables-save | grep REDSOCKS >/dev/null 2>&1 || ${configure-ovpn-tunnel}/bin/configure-ovpn-tunnel
               ${pkgs.wait4x}/bin/wait4x tcp ${lib.elemAt config.ovpn.local-ips 0}:${toString config.ovpn.socks-port} --timeout 0 --interval 10s
               ${pkgs.redsocks}/bin/redsocks -c ${redsocks-config}
             ''
@@ -344,15 +344,15 @@ Notes:
           };
 
           systemd.services = {
-            oracle-ssh-tunnel = {
+            ovpn-ssh-tunnel = {
               enable = true;
-              description = "Tunnels for Oracle VPN";
+              description = "Tunnels for ovpn VPN";
               serviceConfig = {
                 Type = "simple";
                 User = "${config.ovpn.user}";
               };
               script = toString (
-                pkgs.writeShellScript "oracle-ssh-tunnel" (
+                pkgs.writeShellScript "ovpn-ssh-tunnel" (
                   let
                     ssh_cmd = lib.concatStringsSep " " [
                       "${pkgs.openssh}/bin/ssh ${config.ovpn.extra-ssh-command} -Nv -p ${toString config.ovpn.vm-port} ${config.ovpn.user}@${config.ovpn.vm-ip}"
@@ -375,17 +375,17 @@ Notes:
               wantedBy = ["multi-user.target"];
             };
 
-            oracle-redirect-traffic = {
+            ovpn-redirect-traffic = {
               enable = true;
-              description = "Redsocks redirect Oracle traffic";
+              description = "Redsocks redirect ovpn traffic";
               serviceConfig = {
                 Type = "simple";
               };
               script = ''
                 ${pkgs.wait4x}/bin/wait4x tcp ${config.ovpn.vm-ip}:${toString config.ovpn.vm-port} --timeout 0 --interval 10s
-                ${start-oracle-tunnel}/bin/start-oracle-tunnel
+                ${start-ovpn-tunnel}/bin/start-ovpn-tunnel
               '';
-              postStop = "${stop-oracle-tunnel}/bin/stop-oracle-tunnel";
+              postStop = "${stop-ovpn-tunnel}/bin/stop-ovpn-tunnel";
               wants = ["network-online.target"];
               after = ["network-online.target"];
               wantedBy = ["multi-user.target"];
@@ -539,7 +539,7 @@ Notes:
           external_server.wait_for_open_port(80)
 
           # Check configs were updated as expected
-          host.succeed("grep oracle /etc/hosts")
+          host.succeed("grep ovpn /etc/hosts")
           host.succeed("iptables-save | grep REDSOCKS")
 
           # Confirm vm can only access internal resources
@@ -553,8 +553,8 @@ Notes:
           test_curl(host.succeed, "${externalServerAddress}", "External available resource")
 
           # Bring down tunneling services
-          host.systemctl("stop oracle-ssh-tunnel")
-          host.systemctl("stop oracle-redirect-traffic")
+          host.systemctl("stop ovpn-ssh-tunnel")
+          host.systemctl("stop ovpn-redirect-traffic")
 
           host.wait_for_closed_port(${toString default-socks-port})
           host.wait_for_closed_port(${toString default-redsocks-port})
