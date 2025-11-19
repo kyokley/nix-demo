@@ -8,9 +8,9 @@ plugins:
           - https://cdn.jsdelivr.net/npm/reveal.js-mermaid-plugin/plugin/mermaid/mermaid.min.js
 ---
 
-# Nix The World Pt 2
-
+# Nix The World
 # :globe_showing_americas:
+# Part 3? <!-- .element: class="fragment" -->
 
 ---
 
@@ -53,11 +53,11 @@ graph LR
     INTERNET_REQUEST["*.ftpaccess.cc"]
 
     VPN_REQUEST --> ETC_HOSTS
-    INTERNET_REQUEST --> DNS
+    INTERNET_REQUEST -.-> DNS
 
     IP_TABLES{"2: iptables"}
 
-    ETC_HOSTS --> IP_TABLES
+    DNS ==> IP_TABLES
 
     IP_TABLES --> REDSOCKS["3: Redsocks"]
     subgraph "VM"
@@ -72,7 +72,7 @@ graph LR
     SOCKS --> SSH
     AnyConnect --> OVPN(["Corp Server"])
 
-    DNS --> INTERNET([Internet])
+    IP_TABLES -.-> INTERNET([Internet])
 
 linkStyle default stroke-width:4px,fill:none,stroke:green;
 ```
