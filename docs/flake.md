@@ -219,7 +219,9 @@ linkStyle default stroke-width:4px,fill:none,stroke:green;
 ```
 
 Notes:
-This example has been truncated, the actual file is less than 433 lines
+This example has been truncated, the actual file is 433 lines
+
+Show actual file on cloudlab/scm
 
 ---
 
@@ -257,8 +259,91 @@ This example has been truncated, the actual file is less than 433 lines
 
 ---
 
-## :building_construction: Flake Inputs :building_construction:
+## :detective: Flakes Recap :detective:
+* SSH client running SOCKS5 proxy <!-- .element: class="fragment" -->
+* Spin up and configure a redsocks instance <!-- .element: class="fragment" -->
+* Generate and apply a set of iptable rules <!-- .element: class="fragment" -->
+* Insert entries into /etc/hosts <!-- .element: class="fragment" -->
+* Configure wait4x to automatically start connections <!-- .element: class="fragment" -->
+* Everything implemented in systemd services on start up <!-- .element: class="fragment" -->
+### ...all in 433 lines of code! <!-- .element: class="fragment" -->
+
+Notes:
+Are you not entertained??
+
+---
+
+## :snowflake: Flakes Rock! :snowflake:
 <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmprNDl5Z3RubmprNHJhNnJxaXo4c3V5NTNvdmFxNTB5dzB4bnpjcyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/wAy8hHX87PPazO0IEu/giphy.gif" class="r-stretch" />
 
 Notes:
 Inputs are pretty straightforward. They're just upstream dependencies
+
+---
+
+## Are we done yet?
+# NO! <!-- .element: class="fragment" -->
+
+Notes:
+Of course not! Anything being distributed needs tests
+
+---
+
+## Tests for OS functionality???
+<img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExcG5jbjd1dnBxZnF2OG93bnZoOW5wNzM2eWplMHl6bW5meWd3aWhiNCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/hv53DaYcXWe3nRbR1A/giphy.gif" class="r-stretch" />
+
+---
+
+## :thinking_face: Options :thinking_face:
+- Bash
+- Docker/Podman
+- Ansible
+
+Notes:
+- Bash is brutal and you're probably only testing the local host
+- It may be possible to run systemd in docker but not recommended because multiple processes
+- Ansible spin up real compute instances in a VPS but costs money, teardown is a gamble, and juggling networking
+
+---
+
+## Ideal Test Case
+
+```mermaid
+%%{init: {'theme': 'neutral', "flowchart" : { "curve" : "basis" } } }%%
+
+graph TD
+    HOST["Host"]
+    VM
+    EXTERNAL["External"]
+    INTERNAL["Internal"]
+
+    HOST --> EXTERNAL
+    HOST --> VM
+    VM --> INTERNAL
+    HOST -. "BLOCKED" .-> INTERNAL
+    VM -. "BLOCKED" .-> EXTERNAL
+
+linkStyle default stroke-width:4px,fill:none,stroke:green;
+```
+
+---
+
+## Demo
+<img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2pzYmN6dXBuNG1uYXY0eTZiaTd3Zmo5enY2enc3dDA3ZjFhdTg4cCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/cFdHXXm5GhJsc/giphy.gif" class="r-stretch" />
+
+---
+
+## :detective: Flakes Recap Again :detective:
+* SSH client running SOCKS5 proxy
+* Spin up and configure a redsocks instance
+* Generate and apply a set of iptable rules
+* Insert entries into /etc/hosts
+* Configure wait4x to automatically start connections
+* Everything implemented in systemd services on start up
+* And tests! <!-- .element: class="fragment" -->
+### ...still in 433 lines of code!
+
+---
+
+## Fin
+<img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGJlejd4bWRpcWd5dnpiZXBoMmlkM2NkYnlkbW5zdjFpaXNqcGRkeSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7qDEq2bMbcbPRQ2c/giphy.gif" class="r-stretch" />
