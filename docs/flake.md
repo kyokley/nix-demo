@@ -15,11 +15,6 @@ plugins:
 ---
 
 ## :snowflake: Flakes :snowflake:
-Converts inputs to outputs
-
----
-
-## :snowflake: Flakes :snowflake:
 ```nix
 {
   description = "A very basic flake";
@@ -36,6 +31,89 @@ Converts inputs to outputs
   };
 }
 ```
+
+Notes:
+- Previously it was asked if OVPN had a flake
+    - it did not
+- There was also a question about feasibility of using nix with cpm
+    - these are my continuing investigations
+
+- Recap flakes
+
+---
+
+## :building_construction: Flake Inputs :building_construction:
+```nix
+# A GitHub repository.
+inputs.import-cargo = {
+  type = "github";
+  owner = "edolstra";
+  repo = "import-cargo";
+};
+
+# An indirection through the flake registry.
+inputs.nixpkgs = {
+  type = "indirect";
+  id = "nixpkgs";
+};
+```
+
+Notes:
+- Supports things like git, plain https, or even local files
+
+---
+
+## :factory: Flake Outputs :factory:
+```nix[1-46|23-26]
+{
+  # Executed by `nix build .#<name>`
+  packages."<system>"."<name>" = derivation;
+  # Executed by `nix build .`
+  packages."<system>".default = derivation;
+  # Executed by `nix run .#<name>`
+  apps."<system>"."<name>" = {
+    type = "app";
+    program = "<store-path>";
+    meta = {description = "..."; inherit otherMetaAttrs; };
+  };
+  # Executed by `nix run . -- <args?>`
+  apps."<system>".default = { type = "app"; program = "..."; meta = {description = "..."; inherit otherMetaAttrs; }; };
+
+  # Formatter (alejandra, nixfmt, treefmt-nix or nixpkgs-fmt)
+  formatter."<system>" = derivation;
+  # Used for nixpkgs packages, also accessible via `nix build .#<name>`
+  legacyPackages."<system>"."<name>" = derivation;
+  # Overlay, consumed by other flakes
+  overlays."<name>" = final: prev: { };
+  # Default overlay
+  overlays.default = final: prev: { };
+  # Nixos module, consumed by other flakes
+  nixosModules."<name>" = { config, ... }: { options = {}; config = {}; };
+  # Default module
+  nixosModules.default = { config, ... }: { options = {}; config = {}; };
+  # Used with `nixos-rebuild switch --flake .#<hostname>`
+  # nixosConfigurations."<hostname>".config.system.build.toplevel must be a derivation
+  nixosConfigurations."<hostname>" = {};
+  # Used by `nix develop .#<name>`
+  devShells."<system>"."<name>" = derivation;
+  # Used by `nix develop`
+  devShells."<system>".default = derivation;
+  # Hydra build jobs
+  hydraJobs."<attr>"."<system>" = derivation;
+  # Used by `nix flake init -t <flake>#<name>`
+  templates."<name>" = {
+    path = "<store-path>";
+    description = "template description goes here?";
+  };
+  # Used by `nix flake init -t <flake>`
+  templates.default = { path = "<store-path>"; description = ""; };
+  # Executed by `nix flake check`
+  checks."<system>"."<name>" = derivation;
+}
+```
+
+Notes:
+Call attention to the attributes options and config in nixosModules
 
 ---
 
@@ -89,66 +167,80 @@ linkStyle default stroke-width:4px,fill:none,stroke:green;
 ---
 
 ## :snowflake: Flakes :snowflake:
-<img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmprNDl5Z3RubmprNHJhNnJxaXo4c3V5NTNvdmFxNTB5dzB4bnpjcyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/wAy8hHX87PPazO0IEu/giphy.gif" class="r-stretch" />
+### OVPN: flake.nix
+```nix[2-4|6|7|8-25|27-46]
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  };
+
+  outputs = { self, nixpkgs, }: {
+    nixosModules.default = { config, lib, pkgs, ... }: {
+      options.ovpn = {
+        enable = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+          description = ''
+            Whether to enable the ovpn service
+          '';
+        };
+
+        user = lib.mkOption {
+          type = lib.types.str;
+          description = ''
+            User to run services as
+          '';
+        };
+
+        # trunc
+      };
+
+      config = lib.mkIf config.ovpn.enable {
+          networking = {
+            extraHosts = (
+              lib.concatStringsSep "\n" (
+                map (
+                  host_record: let
+                    host = lib.splitString " " host_record;
+                  in "${lib.elemAt host 1} ${lib.elemAt host 0}"
+                )
+                domains
+              )
+            );
+            firewall.allowedTCPPorts = [
+              config.ovpn.redsocks-port
+              config.ovpn.socks-port
+            ];
+          };
+        # trunc
+    };
+
+}
+```
 
 Notes:
-Show OVPN flake.nix
+This example has been truncated, the actual file is less than 433 lines
 
 ---
 
 ## :robot: NixOS Config :robot:
-### flake.nix
-```nix[23-26|51-57]
+```nix[7-10|13|16-24]
 {
   description = "NixOS configuration for yokley";
 
   inputs = {
     # Specify the source of Home Manager and Nixpkgs.
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    home-manager = {
-      url = "github:nix-community/home-manager/release-25.05";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    nixvim = {
-      url = "github:kyokley/nixvim";
-    };
-    qtile-flake = {
-      url = "github:qtile/qtile/v0.33.0";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    usql = {
-      url = "github:kyokley/psql-pager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     ovpn-flake = {
       url = "git+ssh://git@cloudlab.us.oracle.com:2222/tpm/tpm_dev/playground/ovpn.git?ref=main";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = {
-    nixpkgs,
-    nixpkgs-unstable,
-    home-manager,
-    nixvim,
-    qtile-flake,
-    usql,
-    ovpn-flake,
-    ...
-  }: let
-    x86_linux = "x86_64-linux";
-  in {
+  outputs = { nixpkgs, ovpn-flake, ... }: {
     nixosConfigurations = {
-      "saturn" = nixpkgs.lib.nixosSystem {
-        specialArgs = {
-          pkgs-unstable = import nixpkgs-unstable {
-            config.allowUnfree = true;
-            system = x86_linux;
-          };
-        };
+      "machine" = nixpkgs.lib.nixosSystem {
         modules = [
-          (_: {nixpkgs.overlays = [qtile-flake.overlays.default];})
           ovpn-flake.nixosModules.default
           {
             ovpn = {
@@ -156,28 +248,17 @@ Show OVPN flake.nix
               user = "yokley";
             };
           }
-          ./programs/nixos/common-configuration.nix
-          ./programs/nixos/hardware-configuration.nix
-          ./hosts/saturn/configuration.nix
-          ./hosts/saturn/hardware-configuration.nix
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.users.yokley = import ./hosts/saturn/saturn.nix;
-            home-manager.extraSpecialArgs = {
-              vars = import ./hosts/saturn/vars.nix;
-              inherit nixvim;
-              inherit usql;
-              pkgs-unstable = import nixpkgs-unstable {
-                config.allowUnfree = true;
-                system = x86_linux;
-              };
-            };
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-          }
         ];
       };
     };
   };
 }
 ```
+
+---
+
+## :building_construction: Flake Inputs :building_construction:
+<img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmprNDl5Z3RubmprNHJhNnJxaXo4c3V5NTNvdmFxNTB5dzB4bnpjcyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/wAy8hHX87PPazO0IEu/giphy.gif" class="r-stretch" />
+
+Notes:
+Inputs are pretty straightforward. They're just upstream dependencies
