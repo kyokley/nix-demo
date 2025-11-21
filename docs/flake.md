@@ -11,6 +11,7 @@ plugins:
 # Nix The World
 # :globe_showing_americas:
 # Part 3? <!-- .element: class="fragment" -->
+### a.k.a. How I joined the cult of Nix <!-- .element: class="fragment" -->
 
 ---
 
@@ -155,7 +156,7 @@ graph LR
 linkStyle default stroke-width:4px,fill:none,stroke:green;
 ```
 
----
+-v-
 
 ## :globe_with_meridians: OVPN :globe_with_meridians:
 
@@ -167,7 +168,7 @@ linkStyle default stroke-width:4px,fill:none,stroke:green;
 ---
 
 ## :snowflake: Flakes :snowflake:
-### OVPN: flake.nix
+#### OVPN: flake.nix
 ```nix[2-4|6|7|8-25|27-46]
 {
   inputs = {
@@ -264,7 +265,6 @@ Show actual file on cloudlab/scm
 * Spin up and configure a redsocks instance <!-- .element: class="fragment" -->
 * Generate and apply a set of iptable rules <!-- .element: class="fragment" -->
 * Insert entries into /etc/hosts <!-- .element: class="fragment" -->
-* Configure wait4x to automatically start connections <!-- .element: class="fragment" -->
 * Everything implemented in systemd services on start up <!-- .element: class="fragment" -->
 ### ...all in 433 lines of code! <!-- .element: class="fragment" -->
 
@@ -338,7 +338,6 @@ linkStyle default stroke-width:4px,fill:none,stroke:green;
 * Spin up and configure a redsocks instance
 * Generate and apply a set of iptable rules
 * Insert entries into /etc/hosts
-* Configure wait4x to automatically start connections
 * Everything implemented in systemd services on start up
 * And tests! <!-- .element: class="fragment" -->
 ### ...still in 433 lines of code!
