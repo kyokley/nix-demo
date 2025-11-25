@@ -13,6 +13,9 @@ plugins:
 # Part 3? <!-- .element: class="fragment" -->
 ### a.k.a. How I joined the cult of Nix <!-- .element: class="fragment" -->
 
+Notes:
+- The focus of this demo will be flake files specifically with respect to NixOS and not just Nix
+
 ---
 
 ## :snowflake: Flakes :snowflake:
@@ -344,5 +347,15 @@ linkStyle default stroke-width:4px,fill:none,stroke:green;
 
 ---
 
+## Caveats
+* The OVPN flake only controls the host
+* Losing the SSH connection to the VM requires restarting SSH service
+* No proxy settings are required for docker if host network is used
+
+---
+
 ## Fin
 <img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGJlejd4bWRpcWd5dnpiZXBoMmlkM2NkYnlkbW5zdjFpaXNqcGRkeSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7qDEq2bMbcbPRQ2c/giphy.gif" class="r-stretch" />
+
+Notes:
+- Questions?
