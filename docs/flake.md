@@ -127,27 +127,30 @@ Call attention to the attributes options and config in nixosModules
 %%{init: {'theme': 'neutral', "flowchart" : { "curve" : "basis" } } }%%
 graph LR
 
-    subgraph DNS
-        ETC_HOSTS["1: /etc/hosts"]
+    subgraph HOST
+        subgraph DNS
+            ETC_HOSTS["1: /etc/hosts"]
+        end
+
+        VPN_REQUEST["cloudlab"]
+        INTERNET_REQUEST["*.ftpaccess.cc"]
+
+        VPN_REQUEST --> ETC_HOSTS
+        INTERNET_REQUEST -.-> DNS
+
+        IP_TABLES{"2: iptables"}
+
+        DNS ==> IP_TABLES
+
+        IP_TABLES --> REDSOCKS["3: Redsocks"]
+
+        subgraph SSH_CLIENT["4: SSH client"]
+            SOCKS["SOCKS5 Proxy"]
+        end
     end
 
-    VPN_REQUEST["cloudlab"]
-    INTERNET_REQUEST["*.ftpaccess.cc"]
-
-    VPN_REQUEST --> ETC_HOSTS
-    INTERNET_REQUEST -.-> DNS
-
-    IP_TABLES{"2: iptables"}
-
-    DNS ==> IP_TABLES
-
-    IP_TABLES --> REDSOCKS["3: Redsocks"]
     subgraph "VM"
         SSH["SSH Server"] --> AnyConnect
-    end
-
-    subgraph SSH_CLIENT["4: SSH client"]
-        SOCKS["SOCKS5 Proxy"]
     end
 
     REDSOCKS --> SOCKS
