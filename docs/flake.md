@@ -162,6 +162,12 @@ graph LR
 linkStyle default stroke-width:4px,fill:none,stroke:green;
 ```
 
+Notes:
+1. /etc/hosts runs as a "DNS nameserver"
+2. iptables routes traffic to the internet or to redsocks
+3. redsocks wraps the request in a SOCKS5 envelope
+4. SSH routes the SOCKS% request over the tunnel to be executed by the VM
+
 -v-
 
 ## :globe_with_meridians: OVPN :globe_with_meridians:
