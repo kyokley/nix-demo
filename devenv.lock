@@ -3,10 +3,10 @@
     "devenv": {
       "locked": {
         "dir": "src/modules",
-        "lastModified": 1761922975,
+        "lastModified": 1765894141,
         "owner": "cachix",
         "repo": "devenv",
-        "rev": "c9f0b47815a4895fadac87812de8a4de27e0ace1",
+        "rev": "98e707e1a3d1d731da7b76f1c051ed52c900b965",
         "type": "github"
       },
       "original": {
@@ -19,10 +19,10 @@
     "flake-compat": {
       "flake": false,
       "locked": {
-        "lastModified": 1761588595,
+        "lastModified": 1765121682,
         "owner": "edolstra",
         "repo": "flake-compat",
-        "rev": "f387cd2afec9419c8ee37694406ca490c3f34ee5",
+        "rev": "65f23138d8d09a92e30f1e5c87611b23ef451bf3",
         "type": "github"
       },
       "original": {
@@ -34,10 +34,10 @@
     "flake-compat_2": {
       "flake": false,
       "locked": {
-        "lastModified": 1761588595,
+        "lastModified": 1765121682,
         "owner": "edolstra",
         "repo": "flake-compat",
-        "rev": "f387cd2afec9419c8ee37694406ca490c3f34ee5",
+        "rev": "65f23138d8d09a92e30f1e5c87611b23ef451bf3",
         "type": "github"
       },
       "original": {
@@ -55,10 +55,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1760663237,
+        "lastModified": 1765464257,
         "owner": "cachix",
         "repo": "git-hooks.nix",
-        "rev": "ca5b894d3e3e151ffc1db040b6ce4dcc75d31c37",
+        "rev": "09e45f2598e1a8499c3594fe11ec2943f34fe509",
         "type": "github"
       },
       "original": {
@@ -75,10 +75,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1709087332,
+        "lastModified": 1762808025,
         "owner": "hercules-ci",
         "repo": "gitignore.nix",
-        "rev": "637db329424fd7e46cf4185293b9cc8c88c95394",
+        "rev": "cb5e3fdca1de58ccbc3ef53de65bd372b48f567c",
         "type": "github"
       },
       "original": {
@@ -108,10 +108,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1761716996,
+        "lastModified": 1765614563,
         "owner": "nlewo",
         "repo": "nix2container",
-        "rev": "e5496ab66e9de9e3f67dc06f692dfbc471b6316e",
+        "rev": "954bfece93c6f1475be983820d860b2f9a39e7ce",
         "type": "github"
       },
       "original": {
@@ -122,10 +122,10 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1761313199,
+        "lastModified": 1764580874,
         "owner": "cachix",
         "repo": "devenv-nixpkgs",
-        "rev": "d1c30452ebecfc55185ae6d1c983c09da0c274ff",
+        "rev": "dcf61356c3ab25f1362b4a4428a6d871e84f1d1d",
         "type": "github"
       },
       "original": {
@@ -143,10 +143,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1761307700,
+        "lastModified": 1765052656,
         "owner": "cachix",
         "repo": "nixpkgs-python",
-        "rev": "b06789c07f0df2498d2a7ffbf3b031c028b2826c",
+        "rev": "04b27dbad2e004cb237db202f21154eea3c4f89f",
         "type": "github"
       },
       "original": {
