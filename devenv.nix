@@ -25,7 +25,7 @@
 
   # https://devenv.sh/processes/
   processes = {
-    serve.exec = "uvx mkslides serve docs/";
+    serve.exec = "serve";
   };
 
   containers."nix-demo" = {
@@ -48,6 +48,7 @@
       echo "docker run --rm -it --net=host kyokley/ubuntu-with-nix /bin/bash"
     '';
     vim.exec = "nix run github:kyokley/nixvim -- $@";
+    serve.exec = "uvx mkslides serve docs/";
   };
 
   enterShell = ''
